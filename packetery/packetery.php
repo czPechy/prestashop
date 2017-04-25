@@ -344,14 +344,21 @@ class Packetery extends Module
         );
 
         foreach (Group::getGroups(true) as $group) {
-            $db->autoExecute(
-                _DB_PREFIX_ . 'carrier_group',
-                array(
+            if (Tools::version_compare(_PS_VERSION_, '1.7.0.0', '>=')) {
+                $db->insert('carrier_group', array(
                     'id_carrier' => (int)$carrier->id,
                     'id_group' => (int)$group['id_group']
-                ),
-                'INSERT'
-            );
+                ));
+            } else {
+                $db->autoExecute(
+                    _DB_PREFIX_ . 'carrier_group',
+                    array(
+                        'id_carrier' => (int)$carrier->id,
+                        'id_group' => (int)$group['id_group']
+                    ),
+                    'INSERT'
+                );
+            }
         }
 
         $rangeWeight = new RangeWeight();
@@ -368,36 +375,57 @@ class Packetery extends Module
 
         $zones = Zone::getZones(true);
         foreach ($zones as $zone) {
-            $db->autoExecute(
-                _DB_PREFIX_ . 'carrier_zone',
-                array(
+            if (Tools::version_compare(_PS_VERSION_, '1.7.0.0', '>=')) {
+                $db->insert('carrier_zone', array(
                     'id_carrier' => (int)$carrier->id,
                     'id_zone' => (int)$zone['id_zone']
-                ),
-                'INSERT'
-            );
-            $db->autoExecuteWithNullValues(
-                _DB_PREFIX_ . 'delivery',
-                array(
+                ));
+                $db->insert('delivery', array(
                     'id_carrier' => (int)$carrier->id,
                     'id_range_price' => (int)$rangePrice->id,
                     'id_range_weight' => null,
                     'id_zone' => (int)$zone['id_zone'],
                     'price' => '0'
-                ),
-                'INSERT'
-            );
-            $db->autoExecuteWithNullValues(
-                _DB_PREFIX_ . 'delivery',
-                array(
+                ));
+                $db->insert('delivery', array(
                     'id_carrier' => (int)$carrier->id,
                     'id_range_price' => null,
                     'id_range_weight' => (int)$rangeWeight->id,
                     'id_zone' => (int)$zone['id_zone'],
                     'price' => '0'
-                ),
-                'INSERT'
-            );
+                ));
+            } else {
+                $db->autoExecute(
+                    _DB_PREFIX_ . 'carrier_zone',
+                    array(
+                        'id_carrier' => (int)$carrier->id,
+                        'id_zone' => (int)$zone['id_zone']
+                    ),
+                    'INSERT'
+                );
+                $db->autoExecuteWithNullValues(
+                    _DB_PREFIX_ . 'delivery',
+                    array(
+                        'id_carrier' => (int)$carrier->id,
+                        'id_range_price' => (int)$rangePrice->id,
+                        'id_range_weight' => null,
+                        'id_zone' => (int)$zone['id_zone'],
+                        'price' => '0'
+                    ),
+                    'INSERT'
+                );
+                $db->autoExecuteWithNullValues(
+                    _DB_PREFIX_ . 'delivery',
+                    array(
+                        'id_carrier' => (int)$carrier->id,
+                        'id_range_price' => null,
+                        'id_range_weight' => (int)$rangeWeight->id,
+                        'id_zone' => (int)$zone['id_zone'],
+                        'price' => '0'
+                    ),
+                    'INSERT'
+                );
+            }
         }
 
         if (Tools::getIsset('packetery_carrier_logo') && Tools::strlen(Tools::getValue('packetery_carrier_logo')) == 2) {
