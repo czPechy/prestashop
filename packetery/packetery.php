@@ -116,12 +116,12 @@ class Packetery extends Module
             $error[] = $this->l('Packetery API key is not set.');
             $have_error = true;
         } elseif (!$error) {
-            if ($this->fetch($test) != 1) {
+            if ($this->fetchData($test) != 1) {
                 $error[] = $this->l('Cannot access Packetery API with specified key. Possibly the API key is wrong.');
                 $have_error = true;
             } else {
                 $data = Tools::jsonDecode(
-                    $this->fetch("http://www.zasilkovna.cz/api/$key/version-check-prestashop?my=" . $this->version)
+                    $this->fetchData("http://www.zasilkovna.cz/api/$key/version-check-prestashop?my=" . $this->version)
                 );
                 if (self::compareVersions($data->version, $this->version) > 0) {
                     $cookie = Context::getContext()->cookie;
@@ -1257,7 +1257,7 @@ window.packetery.jQuery(function() {
         return '<script type="text/javascript" src="' . _MODULE_DIR_ . 'packetery/views/js/api.js"></script>';
     }
 
-    private function fetch($url)
+    private function fetchData($url)
     {
         $transportMethod = self::transportMethod();
         if (Tools::substr($transportMethod, -1) == 's') {
@@ -1326,7 +1326,7 @@ window.packetery.jQuery(function() {
 
         foreach ($files as $local => $remote) {
             if (date("d.m.Y", @filemtime($local)) != date("d.m.Y") && (!file_exists($local) || date("H") >= 1)) {
-                if ($this->configuration_errors() || Tools::strlen($data = $this->fetch($remote)) <= 1024) {
+                if ($this->configuration_errors() || Tools::strlen($data = $this->fetchData($remote)) <= 1024) {
                     // if we have older data, then try again tomorrow and delete after 5 days
                     // else keep trying with each load
                     if (file_exists($local)) {
